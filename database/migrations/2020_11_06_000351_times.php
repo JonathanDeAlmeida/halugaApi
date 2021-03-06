@@ -21,8 +21,11 @@ class Times extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->dateTime('start');
-            $table->dateTime('finish');
+            $table->string('name')->nullable();
+            $table->text('details')->nullable();
+            $table->date('selected_date');
+            $table->time('start');
+            $table->time('finish');
             $table->timestamps();
         });
     }
