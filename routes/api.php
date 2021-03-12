@@ -15,6 +15,7 @@ Route::post('place-create', 'App\Http\Controllers\PlaceController@create');
 
 Route::post('time-create', 'App\Http\Controllers\TimeController@create');
 Route::post('get-times', 'App\Http\Controllers\TimeController@getTimes');
+Route::post('time-excluded', 'App\Http\Controllers\TimeController@excluded');
 
 Route::get('phone-create', 'App\Http\Controllers\PhoneController@create');
 Route::get('adresse-create', 'App\Http\Controllers\AddressController@create');

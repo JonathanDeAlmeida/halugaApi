@@ -30,6 +30,15 @@ class TimeController extends Controller
         return $time;
     }
 
+    public function excluded (Request $request)
+    {
+        $data = $request->all();
+        
+        Time::where('id', $data['timeId'])->delete();
+        
+        return response()->json('successfully removed');
+    }
+
     public function getTimes (Request $request)
     {
         $data = $request->all();
