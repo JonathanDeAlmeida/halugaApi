@@ -16,6 +16,8 @@ class TimeController extends Controller
 
         $responsible = Responsible::where('user_id', $data['userId'])->first();
         $place = Place::where('responsible_id', $responsible->id)->first();
+        $start = Carbon::parse($data['start'])->format('H:i');
+        $finish = Carbon::parse($data['finish'])->format('H:i');
 
         $time = new Time();
         $time->place_id = $place->id;
@@ -23,11 +25,40 @@ class TimeController extends Controller
         $time->name = $data['name'];
         $time->details = $data['details'];
         $time->selected_date = $data['selectedDate'];
-        $time->start = $data['start'];
-        $time->finish = $data['finish'];
+        $time->start = $start;
+        $time->finish = $finish;
         $time->save();
 
         return $time;
+    }
+
+    public function edit (Request $request)
+    {
+        $data = $request->all();
+        $time = $data['time'];
+        $start = Carbon::parse($time['start'])->format('H:i');
+        $finish = Carbon::parse($time['finish'])->format('H:i');
+
+        Time::where('id', $time['id'])->update([
+            'name' => $time['name'],
+            'details' => $time['details'],
+            'start' => $start,
+            'finish' => $finish
+        ]);
+
+        return response()->json('successfully edit');
+
+        // $time = new Time();
+        // $time->place_id = $place->id;
+        // $time->user_id = $data['userId'];
+        // $time->name = $data['name'];
+        // $time->details = $data['details'];
+        // $time->selected_date = $data['selectedDate'];
+        // $time->start = $data['start'];
+        // $time->finish = $data['finish'];
+        // $time->save();
+
+        // return $time;
     }
 
     public function excluded (Request $request)
@@ -46,7 +77,11 @@ class TimeController extends Controller
         $responsible = Responsible::where('user_id', $data['userId'])->first();
         $place = Place::where('responsible_id', $responsible->id)->first();
 
-        $times = Time::where('place_id', $place->id)->where('selected_date', $data['selectedDate'])->get();
+        $times = Time::where('place_id', $place->id)
+        ->where('selected_date', $data['selectedDate'])
+        ->orderBy('start')
+        ->orderBy('finish')
+        ->get();
 
         foreach ($times as $time) {
             $time->start = Carbon::parse($time->start)->format('H:i');
