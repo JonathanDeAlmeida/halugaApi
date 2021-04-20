@@ -20,4 +20,27 @@ class UserController extends Controller
 
         return response()->json($user);
     }
+
+    public function get (Request $request)
+    {
+        $data = $request->all();
+
+        $user = User::where('id', $data['user_id'])->first();
+
+        return response()->json($user);
+    }
+
+    public function edit (Request $request)
+    {
+        $data = $request->all();
+
+        $user = User::where('id', $data['id'])->update([
+            'name' => $data['name'],
+            'login' => $data['login'],
+            'password' => $data['password'],
+            'email' => $data['email']
+        ]);
+
+        return response()->json('ok');
+    }
 }

@@ -6,12 +6,22 @@ use App\Models\Place;
 use App\Models\Responsible;
 use App\Models\Adresse;
 use App\Models\Phone;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 class PlaceController extends Controller
 {
     public function create (Request $request)
     {
+        // $image = $request->file('image');
+
+        // $extension = $request->file->extension();
+        // $name = "hey";
+        // $nameFile = "{$name}.{$extension}";
+
+        // $request->file->storeAs('placeImage', $nameFile);
+        // $path = Storage::disk('local')->put($image, 'Contents');
+
         $data = $request->all();
         
         $responsible = new Responsible();
