@@ -12,6 +12,8 @@ Route::post('user-create', 'App\Http\Controllers\UserController@create');
 Route::post('user-edit', 'App\Http\Controllers\UserController@edit');
 Route::post('get-user', 'App\Http\Controllers\UserController@get');
 
+Route::post('get-place', 'App\Http\Controllers\PlaceController@getPlace');
+
 Route::get('responsible-create', 'App\Http\Controllers\ResponsibleController@create');
 Route::get('message-create', 'App\Http\Controllers\MessageController@create');
 Route::post('place-create', 'App\Http\Controllers\PlaceController@create');

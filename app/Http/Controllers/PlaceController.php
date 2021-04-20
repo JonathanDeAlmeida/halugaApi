@@ -53,4 +53,19 @@ class PlaceController extends Controller
 
         return response()->json($place);
     }
+
+    public function getPlace (Request $request)
+    {
+        $data = $request->all();
+
+        $responsible = Responsible::where('user_id', $data['user_id'])->first();
+
+        $place = Place::where('responsible_id', $responsible->id)->first();
+
+        $place->address = Adresse::where('place_id', $place->id)->first();
+
+        $place->phone = Phone::where('place_id', $place->id)->first();
+
+        return response()->json($place);
+    }
 }
