@@ -11,6 +11,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('user-create', 'App\Http\Controllers\UserController@create');
 Route::post('user-edit', 'App\Http\Controllers\UserController@edit');
 Route::post('get-user', 'App\Http\Controllers\UserController@get');
+Route::get('get-all', 'App\Http\Controllers\UserController@getAll');
+Route::post('login', 'App\Http\Controllers\UserController@login');
 
 Route::post('get-place', 'App\Http\Controllers\PlaceController@getPlace');
 

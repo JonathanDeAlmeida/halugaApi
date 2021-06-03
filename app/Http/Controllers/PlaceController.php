@@ -54,6 +54,16 @@ class PlaceController extends Controller
         return response()->json($place);
     }
 
+    public function editPlace (Request $request)
+    {
+        // $user = User::where('id', $data['id'])->update([
+        //     'name' => $data['name'], 
+        //     'login' => $data['login'],
+        //     'password' => $data['password'],
+        //     'email' => $data['email']
+        // ]);
+    }
+
     public function getPlace (Request $request)
     {
         $data = $request->all();
