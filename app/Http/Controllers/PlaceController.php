@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Place;
 use App\Models\Responsible;
 use App\Models\Adresse;
 use App\Models\Phone;
+use App\Models\Time;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
@@ -64,17 +67,82 @@ class PlaceController extends Controller
         // ]);
     }
 
+    public function getFilterPlace (Request $request)
+    {
+        $data = json_encode($request->all());
+        $filter = json_decode($data);
+
+        $places = Place::select(
+            'users.name as responsible_name',
+            'places.id as place_id',
+            'places.name',
+            'places.description',
+            'places.image_path',
+            'adresses.*',
+            'phones.*'
+        )
+        ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
+        ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
+        ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
+        ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
+        ->where(function($query) use ($filter) {
+            if ($filter->name) {
+                $query->where('places.name', 'LIKE', "%$filter->name%");
+            }
+            if ($filter->responsibleName) {
+                $query->where('users.name', 'LIKE', "%$filter->responsibleName%");
+            }
+            if ($filter->street) {
+                $query->where('adresses.street', 'LIKE', "%$filter->street%");
+            }
+            if ($filter->district) {
+                $query->where('adresses.district', 'LIKE', "%$filter->district%");
+            }
+            if ($filter->city) {
+                $query->where('adresses.city', 'LIKE', "%$filter->city%");
+            }
+            if ($filter->cep) {
+                $query->where('adresses.cep', 'LIKE', "%$filter->cep%");
+            }
+            if ($filter->state) {
+                $query->where('adresses.state', 'LIKE', "%$filter->state%");
+            }
+            if ($filter->number) {
+                $query->where('adresses.number', 'LIKE', "%$filter->number%");
+            }    
+        })->get();
+
+        return response()->json($places);
+    }
+
+    public function getPlaceTimes (Request $request)
+    {
+        $data = $request->all();
+
+        $times = Time::where('place_id', $data['place_id'])->where('selected_date', $data['selectedDate'])
+        ->orderBy('start')
+        ->orderBy('finish')
+        ->get();
+
+        foreach ($times as $time) {
+            $time->start = Carbon::parse($time->start)->format('H:i');
+            $time->finish = Carbon::parse($time->finish)->format('H:i');
+        }
+
+        return response()->json($times);
+    }
+
     public function getPlace (Request $request)
     {
         $data = $request->all();
 
-        $responsible = Responsible::where('user_id', $data['user_id'])->first();
-
-        $place = Place::where('responsible_id', $responsible->id)->first();
-
-        $place->address = Adresse::where('place_id', $place->id)->first();
-
-        $place->phone = Phone::where('place_id', $place->id)->first();
+        $place = Place::select('users.name as responsible_name', 'places.*', 'adresses.*', 'phones.*')
+        ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
+        ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
+        ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
+        ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
+        ->where('places.id', $data['place_id'])
+        ->first();
 
         return response()->json($place);
     }

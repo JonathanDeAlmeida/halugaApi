@@ -15,6 +15,8 @@ Route::get('get-all', 'App\Http\Controllers\UserController@getAll');
 Route::post('login', 'App\Http\Controllers\UserController@login');
 
 Route::post('get-place', 'App\Http\Controllers\PlaceController@getPlace');
+Route::post('get-filter-place', 'App\Http\Controllers\PlaceController@getFilterPlace');
+Route::post('get-place-times', 'App\Http\Controllers\PlaceController@getPlaceTimes');
 
 Route::get('responsible-create', 'App\Http\Controllers\ResponsibleController@create');
 Route::get('message-create', 'App\Http\Controllers\MessageController@create');
