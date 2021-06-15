@@ -16,45 +16,56 @@ class PlaceController extends Controller
 {
     public function create (Request $request)
     {
-        // $image = $request->file('image');
 
-        // $extension = $request->file->extension();
-        // $name = "hey";
-        // $nameFile = "{$name}.{$extension}";
-
-        // $request->file->storeAs('placeImage', $nameFile);
-        // $path = Storage::disk('local')->put($image, 'Contents');
-
-        $data = $request->all();
-        
+        $req = $request->all();
+        $data = json_decode($req['form']);
+       
         $responsible = new Responsible();
-        $responsible->user_id = $data['userId'];
+        $responsible->user_id = $data->userId;
         $responsible->save();
 
         $place = new Place();
         $place->responsible_id = $responsible->id;
-        $place->name = $data['name'];
-        $place->description = $data['description'];
-        $place->image_path = 'image path';
+        $place->name = $data->name;
+        $place->description = $data->description;
         $place->save();
 
         $address = new Adresse();
         $address->place_id = $place->id;
-        $address->street = $data['street'];
-        $address->number = $data['number'];
-        $address->district = $data['district'];
-        $address->city = $data['city'];
-        $address->state = $data['state'];
-        $address->complement = $data['complement'];
-        $address->cep = $data['cep'];
+        $address->street = $data->street;
+        $address->number = $data->number;
+        $address->district = $data->district;
+        $address->city = $data->city;
+        $address->state = $data->state;
+        $address->complement = $data->complement;
+        $address->cep = $data->cep;
         $address->save();
 
         $phone = new Phone();
         $phone->place_id = $place->id;
-        $phone->phone = $data['phone'];
+        $phone->phone = $data->phone;
         $phone->save();
 
-        return response()->json($place);
+        $this->placeImageUpload($req['file'], $place->id);
+
+        return response()->json('save success');
+    }
+
+    public function placeImageUpload ($file, $place_id)
+    {
+
+        $filename = $file->getClientOriginalName();
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
+
+        $nameDate = Carbon::now()->format('YmdHms');
+        $name = $nameDate . '.' . $extension;
+
+        $file->storeAs('public/placeImages', $name);
+        $path = '/storage/placeImages/' . $name;
+
+        $place = Place::where('id', $place_id)->first();
+        $place->image_path = $path;
+        $place->save();
     }
 
     public function editPlace (Request $request)
@@ -136,12 +147,18 @@ class PlaceController extends Controller
     {
         $data = $request->all();
 
+        $place_user = User::select('places.id')
+        ->leftJoin('responsibles', 'responsibles.user_id', '=', 'users.id')
+        ->leftJoin('places', 'places.responsible_id', '=', 'responsibles.id')
+        ->where('users.id', $data['user_id'])
+        ->first();
+
         $place = Place::select('users.name as responsible_name', 'places.*', 'adresses.*', 'phones.*')
         ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
         ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
         ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
         ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
-        ->where('places.id', $data['place_id'])
+        ->where('places.id', $place_user->id)
         ->first();
 
         return response()->json($place);
