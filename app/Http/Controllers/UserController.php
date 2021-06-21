@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\User;
+use App\Models\Responsible;
 
 use Illuminate\Support\Facades\DB;
 use Validator;
@@ -14,14 +15,8 @@ class UserController extends Controller
     {
         $data = $request->all();
 
-        if (!$data['name'] || !$data['login'] || !$data['password'] || !$data['email']) {
+        if (!$data['name'] || !$data['password'] || !$data['email']) {
             return response()->json(['user_enabled' => false, 'message' => 'Todos Os Campos Devem Ser Preenchidos']);
-        }
-
-        $used_login = User::where('login', $data['login'])->first();
-        
-        if ($used_login) {
-            return response()->json(['user_enabled' => false, 'message' => 'Este Login Já Está Em Uso']);
         }
 
         $used_email = User::where('email', $data['email'])->first();
@@ -32,7 +27,6 @@ class UserController extends Controller
 
         $user = new User();
         $user->name = $data['name'];
-        $user->login = $data['login'];
         $user->password = bcrypt($data['password']);
         $user->email = $data['email'];
         $user->save();
@@ -45,6 +39,16 @@ class UserController extends Controller
         $data = $request->all();
 
         $user = User::where('id', $data['user_id'])->first();
+
+        if ($user) {
+            
+            $responsible = Responsible::where('user_id', $user->id)->first();
+            
+            if ($responsible) {
+
+                $user->place = Place::where('responsible_id', $responsible->id)->first();
+            }
+        }
 
         return response()->json($user);
     }
@@ -59,14 +63,8 @@ class UserController extends Controller
     {
         $data = $request->all();
 
-        if (!$data['name'] || !$data['login'] || !$data['email']) {
+        if (!$data['name'] || !$data['email']) {
             return response()->json(['user_enabled' => false, 'message' => 'Todos Os Campos Devem Ser Preenchidos']);
-        }
-
-        $used_login = User::where('login', $data['login'])->where('id', '!=', $data['id'])->first();
-        
-        if ($used_login) {
-            return response()->json(['user_enabled' => false, 'message' => 'Este Login Já Está Em Uso']);
         }
 
         $used_email = User::where('email', $data['email'])->where('id', '!=', $data['id'])->first();
@@ -77,7 +75,6 @@ class UserController extends Controller
 
         $user = User::where('id', $data['id'])->update([
             'name' => $data['name'],
-            'login' => $data['login'],
             'email' => $data['email']
         ]);
 
@@ -93,11 +90,11 @@ class UserController extends Controller
     {
         $data = $request->all();
 
-        if (!$data['login'] || !$data['password']) {
+        if (!$data['email'] || !$data['password']) {
             return response()->json(['user_enabled' => false, 'message' => 'Todos Os Campos Devem Ser Preenchidos']);
         }
 
-        $has_user = User::where('login', $data['login'])->first();
+        $has_user = User::where('email', $data['email'])->first();
 
         if (!$has_user) {
             return response()->json(['user_enabled' => false, 'message' => 'Não Há Usuário Cadastrado']);

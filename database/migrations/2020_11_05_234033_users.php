@@ -11,7 +11,7 @@ class Users extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->integer('id')->autoIncrement()->unsigned();
             $table->string('name');
-            $table->string('login');
+            // $table->string('login');
             $table->string('password');
             $table->string('email');
             $table->timestamps();

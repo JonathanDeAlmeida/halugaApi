@@ -121,7 +121,7 @@ class PlaceController extends Controller
             if ($filter->number) {
                 $query->where('adresses.number', 'LIKE', "%$filter->number%");
             }    
-        })->get();
+        })->paginate(10);
 
         return response()->json($places);
     }
@@ -146,21 +146,32 @@ class PlaceController extends Controller
     public function getPlace (Request $request)
     {
         $data = $request->all();
+        $place_id = isset($data['place_id']) ? $data['place_id'] : null;
 
-        $place_user = User::select('places.id')
-        ->leftJoin('responsibles', 'responsibles.user_id', '=', 'users.id')
-        ->leftJoin('places', 'places.responsible_id', '=', 'responsibles.id')
-        ->where('users.id', $data['user_id'])
-        ->first();
+        if (isset($data['user_id'])) {
+            $place_user = User::select('places.id')
+            ->leftJoin('responsibles', 'responsibles.user_id', '=', 'users.id')
+            ->leftJoin('places', 'places.responsible_id', '=', 'responsibles.id')
+            ->where('users.id', $data['user_id'])
+            ->first();
 
-        $place = Place::select('users.name as responsible_name', 'places.*', 'adresses.*', 'phones.*')
-        ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
-        ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
-        ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
-        ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
-        ->where('places.id', $place_user->id)
-        ->first();
+            $place_id = $place_user->id;
+        }
 
-        return response()->json($place);
+        if ($place_id) {
+
+            $place = Place::select('users.name as responsible_name', 'places.*', 'adresses.*', 'phones.*')
+            ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
+            ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
+            ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
+            ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
+            ->where('places.id', $place_id)
+            ->first();
+
+            return response()->json(['success' => true, 'place' => $place]);
+        }
+
+        return response()->json(['success' => false]);
+
     }
 }
