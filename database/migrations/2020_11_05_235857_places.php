@@ -16,9 +16,23 @@ class Places extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->string('name');
+            // $table->string('name');
+            // $table->text('description')->nullable();
+            // $table->string('image_path')->nullable();
+
+            $table->string('condition');
+            $table->string('type');
+            $table->float('area')->nullable();
+            $table->integer('rooms')->nullable();
+            $table->integer('bathrooms')->nullable();
+            $table->integer('suites')->nullable();
+            $table->integer('vacancies')->nullable();
+            $table->integer('walk')->nullable();
+            $table->float('rentValue');
+            $table->string('condominium')->nullable();
+            $table->float('iptu')->nullable();
             $table->text('description')->nullable();
-            $table->string('image_path')->nullable();
+
             $table->timestamps();
         });
     }

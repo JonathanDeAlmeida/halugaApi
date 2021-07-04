@@ -26,7 +26,18 @@ class PlaceController extends Controller
 
         $place = new Place();
         $place->responsible_id = $responsible->id;
-        $place->name = $data->name;
+        // $place->name = $data->name;
+        $place->condition = $data->condition;
+        $place->type = $data->type;
+        $place->area = $data->area;
+        $place->rooms = $data->rooms;
+        $place->bathrooms = $data->bathrooms;
+        $place->suites = $data->suites;
+        $place->vacancies = $data->vacancies;
+        $place->walk = $data->walk;
+        $place->rentValue = $data->rentValue;
+        $place->condominium = $data->condominium;
+        $place->iptu = $data->iptu;
         $place->description = $data->description;
         $place->save();
 
@@ -46,7 +57,7 @@ class PlaceController extends Controller
         $phone->phone = $data->phone;
         $phone->save();
 
-        $this->placeImageUpload($req['file'], $place->id);
+        // $this->placeImageUpload($req['file'], $place->id);
 
         return response()->json('save success');
     }
