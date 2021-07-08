@@ -14,6 +14,11 @@ Route::post('get-user', 'App\Http\Controllers\UserController@get');
 Route::get('get-all', 'App\Http\Controllers\UserController@getAll');
 Route::post('login', 'App\Http\Controllers\UserController@login');
 
+Route::post('upload-file', 'App\Http\Controllers\PlaceController@postUploadFile');
+
+Route::post('delete-place', 'App\Http\Controllers\PlaceController@deletePlace');
+Route::post('get-places', 'App\Http\Controllers\PlaceController@getPlaces');
+
 Route::post('get-place', 'App\Http\Controllers\PlaceController@getPlace');
 Route::post('get-filter-place', 'App\Http\Controllers\PlaceController@getFilterPlace');
 Route::post('get-place-times', 'App\Http\Controllers\PlaceController@getPlaceTimes');
