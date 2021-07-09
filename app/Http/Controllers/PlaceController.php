@@ -8,6 +8,7 @@ use App\Models\Responsible;
 use App\Models\Adresse;
 use App\Models\Phone;
 use App\Models\Time;
+use App\Models\PlaceImage;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
@@ -60,23 +61,6 @@ class PlaceController extends Controller
         // $this->placeImageUpload($req['file'], $place->id);
 
         return response()->json('save success');
-    }
-
-    public function placeImageUpload ($file, $place_id)
-    {
-
-        $filename = $file->getClientOriginalName();
-        $extension = pathinfo($filename, PATHINFO_EXTENSION);
-
-        $nameDate = Carbon::now()->format('YmdHms');
-        $name = $nameDate . '.' . $extension;
-
-        $file->storeAs('public/placeImages', $name);
-        $path = '/storage/placeImages/' . $name;
-
-        $place = Place::where('id', $place_id)->first();
-        $place->image_path = $path;
-        $place->save();
     }
 
     public function editPlace (Request $request)
@@ -236,112 +220,63 @@ class PlaceController extends Controller
 
      public function postUploadFile(Request $request)
     {
-        return response('success', 200);
-        return response()->json('oi');
-        return response('success', 200);
+        
+        $req = $request->all();
+        $resp = $this->placeImageUpload($req['file'], $req['place_id']);
 
-        $file = $request->file('file');
-        $info = $request->all();
-        $type = $request->get('type') ? $request->get('type') : false;
+        return response()->json($resp);
+    }
 
-        $path_to = $file->getClientMimeType();
-        $ext = explode('.', $file->getClientOriginalName());
-        $ext = end($ext);
+    public function placeImageUpload ($file, $place_id)
+    {
 
-        $absoluty_path = null;
+        $filename = $file->getClientOriginalName();
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
-        if ($type == 'video360') {
+        $place_image = new PlaceImage();
+        $place_image->place_id = $place_id;
+        $place_image->save();
+        
+        $nameDate = Carbon::now()->format('YmdHms') . 'i' . $place_image->id . 'p' . $place_image->place_id;
+        $name = $nameDate . '.' . $extension;
 
-            $absoluty_path = 'storage/videos';
-            $storage = Storage::disk('custom')->putFile('videos', $request->file('file'), 'public');
-            $url = 'static/storage/' . $storage;
-        } elseif ($ext == 'zip') {
+        $file->storeAs('public/placeImages', $name);
+        $path = '/storage/placeImages/' . $name;
 
-            $storage = null;
-            $destinationPath = 'public/storage/presentation';
-            try {
-                $file->move($destinationPath, $file->getClientOriginalName());
-            } catch (Exception $exception) {
-                return $exception->getMessage();
-            }
+        $place_image->name = $name;
+        $place_image->path = $path;
+        $place_image->save();
 
-            $url = str_replace('public', 'storage', $storage);
-        } else {
-
-            $absoluty_path = 'libraries/' . $path_to;
-            $storage = Storage::putFile('public/libraries/' . $path_to, $request->file('file'), 'public');
-            $url = str_replace('public', 'storage', $storage);
-        }
-
-        $types_with_thumb_enable = array('jpg', 'jpeg', 'png');
-
-        $default_thumb = !in_array($file->extension(), $types_with_thumb_enable) ? 'storage/' . $file->extension() . '.png' : null;
-
-        $file_info = array(
-            'name' => str_replace(' ', '', $file->getClientOriginalName()),
-            'format' => $file->extension(),
-            'url' => $url,
-            'path' => '/' . $path_to,
-            'absoluty_path' => $absoluty_path,
-            'enable' => true,
-            'default_thumb' => $default_thumb
-        );
-
-
-        $result = $this->model->create($file_info);
-
-        // Realizando o log da ação
-        actionLog($request, $this->model, mountActionLog($result, null, 'insert'));
-
-        if (array_key_exists('library', $info) && $info['library'] && $result->id) {
-            $result->libraries()->create(array('library_id' => $info['library'], 'file_id' => $result->id));
-        }
-
-        if (array_key_exists('component_id', $info) && $info['component_id'] && $result->id) {
-            $resultComp = Component::find($info['component_id']);
-            $resultComp->file_id = $result->id;
-            $resultComp->save();
-
-            // Realizando o log da ação
-            actionLog($request, new Component(), mountActionLog($resultComp, null, 'update'));
-        }
-
-        return response($result, 200);
+        return $place_image;
     }
 
     public function removeFile(Request $request)
     {
-        return response()->json([$request]);
 
-        $result = $this->model->findOrFail($request->get('fileId'));
+        $data = $request->all();
 
-        if (!$request->get('not_delete')) {
-            Storage::delete(str_replace('storage', 'public', $result->url));
-        }
+        if (isset($data['file_id'])) {
 
-        if ($request->get('component_id')) {
-            $resultComp = Component::find($request->get('component_id'));
-            $resultComp->file_id = null;
-            $resultComp->save();
-
-            // Realizando o log da ação
-            actionLog($request, new Component(), mountActionLog($resultComp, null, 'update'));
-        }
-
-        if ($request->get('libraryId')) {
-            $result->libraries()->delete(array('library_id' => $request->get('libraryId'), 'file_id' => $request->get('fileId')));
-        }
-
-        if (!$request->get('not_delete')) {
-            $first_result = $this->model->find($request->get('fileId'));
-
-            $first_deleted = $result->delete();
-
-            if ($first_deleted) {
-                actionLog($request, $this->model, mountActionLog($first_result, null, 'delete'));
+            $image = PlaceImage::where('id', $data['file_id'])->first();
+        
+            Storage::delete('public/placeImages/' . $image->name); 
+    
+            $deleted = PlaceImage::where('id', $data['file_id'])->delete();
+    
+            if ($deleted) {
+                return response()->json('excluído com sucesso');
             }
-        }
+        }   
+        return response()->json('imagem não encontrada');
 
-        return response()->json($result);
+    }
+
+    public function getPlaceImages (Request $request)
+    {
+        $data = $request->all();
+        
+        $place_images = PlaceImage::where('place_id', $data['place_id'])->get();
+
+        return response()->json($place_images);
     }
 }

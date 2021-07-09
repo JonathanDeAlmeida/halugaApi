@@ -15,6 +15,9 @@ Route::get('get-all', 'App\Http\Controllers\UserController@getAll');
 Route::post('login', 'App\Http\Controllers\UserController@login');
 
 Route::post('upload-file', 'App\Http\Controllers\PlaceController@postUploadFile');
+Route::post('remove-file', 'App\Http\Controllers\PlaceController@removeFile');
+
+Route::post('get-place-images', 'App\Http\Controllers\PlaceController@getPlaceImages');
 
 Route::post('delete-place', 'App\Http\Controllers\PlaceController@deletePlace');
 Route::post('get-places', 'App\Http\Controllers\PlaceController@getPlaces');
