@@ -18,59 +18,84 @@ class PlaceController extends Controller
     public function create (Request $request)
     {
 
-        $req = $request->all();
-        $data = json_decode($req['form']);
-       
+        $data = $request->all();
+        
         $responsible = new Responsible();
-        $responsible->user_id = $data->userId;
+        $responsible->user_id = $data['userId'];
         $responsible->save();
 
         $place = new Place();
         $place->responsible_id = $responsible->id;
-        // $place->name = $data->name;
-        $place->condition = $data->condition;
-        $place->type = $data->type;
-        $place->area = $data->area;
-        $place->rooms = $data->rooms;
-        $place->bathrooms = $data->bathrooms;
-        $place->suites = $data->suites;
-        $place->vacancies = $data->vacancies;
-        $place->walk = $data->walk;
-        $place->rentValue = $data->rentValue;
-        $place->condominium = $data->condominium;
-        $place->iptu = $data->iptu;
-        $place->description = $data->description;
+        $place->condition = $data['condition'];
+        $place->type = $data['type'];
+        $place->area = $data['area'];
+        $place->rooms = $data['rooms'];
+        $place->bathrooms = $data['bathrooms'];
+        $place->suites = $data['suites'];
+        $place->vacancies = $data['vacancies'];
+        $place->walk = $data['walk'];
+        $place->rentValue = $data['rentValue'];
+        $place->condominium = $data['condominium'];
+        $place->iptu = $data['iptu'];
+        $place->description = $data['description'];
         $place->save();
 
         $address = new Adresse();
         $address->place_id = $place->id;
-        $address->street = $data->street;
-        $address->number = $data->number;
-        $address->district = $data->district;
-        $address->city = $data->city;
-        $address->state = $data->state;
-        $address->complement = $data->complement;
-        $address->cep = $data->cep;
+        $address->street = $data['street'];
+        $address->number = $data['number'];
+        $address->district = $data['district'];
+        $address->city = $data['city'];
+        $address->state = $data['state'];
+        $address->complement = $data['complement'];
+        $address->cep = $data['cep'];
         $address->save();
 
         $phone = new Phone();
         $phone->place_id = $place->id;
-        $phone->phone = $data->phone;
+        $phone->phone = $data['phone'];
         $phone->save();
 
         // $this->placeImageUpload($req['file'], $place->id);
 
-        return response()->json('save success');
+        return response()->json($place);
     }
 
-    public function editPlace (Request $request)
+    public function edit (Request $request)
     {
-        // $user = User::where('id', $data['id'])->update([
-        //     'name' => $data['name'], 
-        //     'login' => $data['login'],
-        //     'password' => $data['password'],
-        //     'email' => $data['email']
-        // ]);
+
+        $data = $request->all();
+
+        Place::where('id', $data['id'])->update([
+            'condition' => $data['condition'],
+            'type' => $data['type'],
+            'area' => $data['area'],
+            'rooms' => $data['rooms'],
+            'bathrooms' => $data['bathrooms'],
+            'suites' => $data['suites'],
+            'vacancies' => $data['vacancies'],
+            'walk' => $data['walk'],
+            'rentValue' => $data['rentValue'],
+            'condominium' => $data['condominium'],
+            'iptu' => $data['iptu'],
+            'description' => $data['description'],
+        ]);
+
+        Adresse::where('place_id', $data['id'])->update([
+            'street' => $data['street'],
+            'number' => $data['number'],
+            'district' => $data['district'],
+            'city' => $data['city'],
+            'state' => $data['state'],
+            'complement' => $data['complement'],
+            'cep' => $data['cep']
+        ]);
+
+        Phone::where('place_id', $data['id'])->update([
+            'phone' => $data['phone'],
+        ]);
+
+        return response()->json('editado com sucesso');
     }
 
     public function getFilterPlace (Request $request)
