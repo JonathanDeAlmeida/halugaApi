@@ -22,14 +22,15 @@ class Places extends Migration
 
             $table->string('condition');
             $table->string('type');
-            $table->float('area')->nullable();
+            $table->integer('area')->nullable();
             $table->integer('rooms')->nullable();
             $table->integer('bathrooms')->nullable();
             $table->integer('suites')->nullable();
             $table->integer('vacancies')->nullable();
             $table->integer('walk')->nullable();
-            $table->float('rentValue');
+            $table->float('rent_value');
             $table->string('condominium')->nullable();
+            $table->float('condominium_value');
             $table->float('iptu')->nullable();
             $table->text('description')->nullable();
 

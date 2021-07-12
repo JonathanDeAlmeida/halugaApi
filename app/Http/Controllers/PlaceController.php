@@ -34,8 +34,9 @@ class PlaceController extends Controller
         $place->suites = $data['suites'];
         $place->vacancies = $data['vacancies'];
         $place->walk = $data['walk'];
-        $place->rentValue = $data['rentValue'];
+        $place->rent_value = $data['rent_value'];
         $place->condominium = $data['condominium'];
+        $place->condominium_value = $data['condominium_value'];
         $place->iptu = $data['iptu'];
         $place->description = $data['description'];
         $place->save();
@@ -75,8 +76,9 @@ class PlaceController extends Controller
             'suites' => $data['suites'],
             'vacancies' => $data['vacancies'],
             'walk' => $data['walk'],
-            'rentValue' => $data['rentValue'],
+            'rent_value' => $data['rent_value'],
             'condominium' => $data['condominium'],
+            'condominium_value' => $data['condominium_value'],
             'iptu' => $data['iptu'],
             'description' => $data['description'],
         ]);
@@ -145,10 +147,10 @@ class PlaceController extends Controller
                 $query->where('places.area', '<=', $filter->areaMax);
             }
             if ($filter->rentValueMin) {
-                $query->where('places.rentValue', '>=', $filter->rentValueMin);
+                $query->where('places.rent_value', '>=', $filter->rentValueMin);
             }
             if ($filter->rentValueMax) {
-                $query->where('places.rentValue', '<=', $filter->rentValueMax);
+                $query->where('places.rent_value', '<=', $filter->rentValueMax);
             }
             if ($filter->rooms) {
                 $query->where('places.rooms', '=', $filter->rooms);
