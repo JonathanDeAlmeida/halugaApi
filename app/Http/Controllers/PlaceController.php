@@ -100,6 +100,165 @@ class PlaceController extends Controller
         return response()->json('editado com sucesso');
     }
 
+    public function getPlaceTimes (Request $request)
+    {
+        $data = $request->all();
+
+        $times = Time::where('place_id', $data['place_id'])->where('selected_date', $data['selectedDate'])
+        ->orderBy('start')
+        ->orderBy('finish')
+        ->get();
+
+        foreach ($times as $time) {
+            $time->start = Carbon::parse($time->start)->format('H:i');
+            $time->finish = Carbon::parse($time->finish)->format('H:i');
+        }
+
+        return response()->json($times);
+    }
+
+    public function getPlaces (Request $request)
+    {
+        $data = $request->all();    
+
+        $places = Place::select('users.name as responsible_name', 'places.*', 'adresses.*', 'phones.*', 'places.id as place_id')
+        ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
+        ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
+        ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
+        ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
+        ->where('users.id', $data['user_id'])
+        ->get();
+
+        foreach ($places as $place) {
+            $place->images = PlaceImage::where('place_id', $place->place_id)->get();
+        }
+
+        return response()->json($places);
+
+    }
+
+    public function deletePlace (Request $request)
+    {
+        $data = $request->all();
+
+        $place = Place::where('id', $data['place_id'])->first();
+
+        $deleted = Place::where('id', $data['place_id'])->delete();
+
+        if ($deleted) {
+            $deleted = Responsible::where('id', $place->responsible_id)->delete();
+            return response()->json('excluído com sucesso');
+        }
+
+    }
+
+    public function getPlace (Request $request)
+    {
+        $data = $request->all();
+        // $place_id = isset($data['place_id']) ? $data['place_id'] : null;
+
+        // if (isset($data['user_id'])) {
+        //     $place_user = User::select('places.id')
+        //     ->leftJoin('responsibles', 'responsibles.user_id', '=', 'users.id')
+        //     ->leftJoin('places', 'places.responsible_id', '=', 'responsibles.id')
+        //     ->where('users.id', $data['user_id'])
+        //     ->first();
+
+        //     $place_id = $place_user->id;
+        // }
+
+        $place = Place::select('users.name as responsible_name', 'places.*', 'adresses.*', 'phones.*')
+        ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
+        ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
+        ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
+        ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
+        ->where('places.id', $data['place_id'])
+        ->first();
+
+        $place->images = PlaceImage::where('place_id', $data['place_id'])->get();
+
+        return response()->json($place);
+
+    }
+
+     public function postUploadFile(Request $request)
+    {
+        
+        $req = $request->all();
+        $resp = $this->placeImageUpload($req['file'], $req['place_id']);
+
+        return response()->json($resp);
+    }
+
+    public function placeImageUpload ($file, $place_id)
+    {
+
+        $filename = $file->getClientOriginalName();
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
+
+        $place_image = new PlaceImage();
+        $place_image->place_id = $place_id;
+        $place_image->save();
+        
+        $nameDate = Carbon::now()->format('YmdHms') . 'i' . $place_image->id . 'p' . $place_image->place_id;
+        $name = $nameDate . '.' . $extension;
+
+        $file->storeAs('public/placeImages', $name);
+        $path = '/storage/placeImages/' . $name;
+
+        $place_image->name = $name;
+        $place_image->path = $path;
+        $place_image->save();
+
+        $this->countImages($place_id);
+
+        return $place_image;
+    }
+
+    public function removeFile(Request $request)
+    {
+
+        $data = $request->all();
+
+        if (isset($data['file_id'])) {
+
+            $image = PlaceImage::where('id', $data['file_id'])->first();
+        
+            Storage::delete('public/placeImages/' . $image->name); 
+    
+            $deleted = PlaceImage::where('id', $data['file_id'])->delete();
+    
+            if ($deleted) {
+
+                $this->countImages($image->place_id);
+
+                return response()->json('excluído com sucesso');
+            }
+        }   
+        return response()->json('imagem não encontrada');
+
+    }
+
+    public function countImages ($place_id) {
+        
+        $count_images = PlaceImage::where('place_id', $place_id)->count();
+        
+        if ($count_images > 4) {
+            Place::where('id', $place_id)->update(['active' => true]);
+        } else {
+            Place::where('id', $place_id)->update(['active' => false]);
+        }
+    }
+
+    public function getPlaceImages (Request $request)
+    {
+        $data = $request->all();
+        
+        $place_images = PlaceImage::where('place_id', $data['place_id'])->get();
+
+        return response()->json($place_images);
+    }
+
     public function getFilterPlace (Request $request)
     {
         $data = json_encode($request->all());
@@ -164,146 +323,12 @@ class PlaceController extends Controller
             if ($filter->walk) {
                 $query->where('places.walk', '=', $filter->walk);
             }
-        })->get();
+        })->where('places.active', true)->get();
+
+        foreach ($places as $place) {
+            $place->images = PlaceImage::where('place_id', $place->place_id)->get();
+        }
 
         return response()->json($places);
-    }
-
-    public function getPlaceTimes (Request $request)
-    {
-        $data = $request->all();
-
-        $times = Time::where('place_id', $data['place_id'])->where('selected_date', $data['selectedDate'])
-        ->orderBy('start')
-        ->orderBy('finish')
-        ->get();
-
-        foreach ($times as $time) {
-            $time->start = Carbon::parse($time->start)->format('H:i');
-            $time->finish = Carbon::parse($time->finish)->format('H:i');
-        }
-
-        return response()->json($times);
-    }
-
-    public function getPlaces (Request $request)
-    {
-        $data = $request->all();    
-
-        $place = Place::select('users.name as responsible_name', 'places.*', 'adresses.*', 'phones.*', 'places.id as place_id')
-        ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
-        ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
-        ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
-        // ->leftJoin('places', 'places.responsible_id', '=', 'responsibles.id')
-        ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
-        ->where('users.id', $data['user_id'])
-        ->get();
-
-        return response()->json($place);
-
-    }
-
-    public function deletePlace (Request $request)
-    {
-        $data = $request->all();
-
-        $place = Place::where('id', $data['place_id'])->first();
-
-        $deleted = Place::where('id', $data['place_id'])->delete();
-
-        if ($deleted) {
-            $deleted = Responsible::where('id', $place->responsible_id)->delete();
-            return response()->json('excluído com sucesso');
-        }
-
-    }
-
-    public function getPlace (Request $request)
-    {
-        $data = $request->all();
-        // $place_id = isset($data['place_id']) ? $data['place_id'] : null;
-
-        // if (isset($data['user_id'])) {
-        //     $place_user = User::select('places.id')
-        //     ->leftJoin('responsibles', 'responsibles.user_id', '=', 'users.id')
-        //     ->leftJoin('places', 'places.responsible_id', '=', 'responsibles.id')
-        //     ->where('users.id', $data['user_id'])
-        //     ->first();
-
-        //     $place_id = $place_user->id;
-        // }
-
-        $place = Place::select('users.name as responsible_name', 'places.*', 'adresses.*', 'phones.*')
-        ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
-        ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
-        ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
-        ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
-        ->where('places.id', $data['place_id'])
-        ->first();
-
-        return response()->json($place);
-
-    }
-
-     public function postUploadFile(Request $request)
-    {
-        
-        $req = $request->all();
-        $resp = $this->placeImageUpload($req['file'], $req['place_id']);
-
-        return response()->json($resp);
-    }
-
-    public function placeImageUpload ($file, $place_id)
-    {
-
-        $filename = $file->getClientOriginalName();
-        $extension = pathinfo($filename, PATHINFO_EXTENSION);
-
-        $place_image = new PlaceImage();
-        $place_image->place_id = $place_id;
-        $place_image->save();
-        
-        $nameDate = Carbon::now()->format('YmdHms') . 'i' . $place_image->id . 'p' . $place_image->place_id;
-        $name = $nameDate . '.' . $extension;
-
-        $file->storeAs('public/placeImages', $name);
-        $path = '/storage/placeImages/' . $name;
-
-        $place_image->name = $name;
-        $place_image->path = $path;
-        $place_image->save();
-
-        return $place_image;
-    }
-
-    public function removeFile(Request $request)
-    {
-
-        $data = $request->all();
-
-        if (isset($data['file_id'])) {
-
-            $image = PlaceImage::where('id', $data['file_id'])->first();
-        
-            Storage::delete('public/placeImages/' . $image->name); 
-    
-            $deleted = PlaceImage::where('id', $data['file_id'])->delete();
-    
-            if ($deleted) {
-                return response()->json('excluído com sucesso');
-            }
-        }   
-        return response()->json('imagem não encontrada');
-
-    }
-
-    public function getPlaceImages (Request $request)
-    {
-        $data = $request->all();
-        
-        $place_images = PlaceImage::where('place_id', $data['place_id'])->get();
-
-        return response()->json($place_images);
     }
 }
