@@ -34,9 +34,13 @@ class PlaceController extends Controller
         $place->bathrooms = $data['bathrooms'];
         $place->suites = $data['suites'];
         $place->vacancies = $data['vacancies'];
-        $place->walk = $data['walk'];
-        $place->rent_value = $data['rent_value'];
-        $place->sale_value = $data['sale_value'];
+
+        if ($data['intent'] == 'rent') {
+            $place->rent_value = $data['rent_value'];
+        } else {
+            $place->sale_value = $data['sale_value'];
+        }
+
         $place->condominium_value = $data['condominium_value'];
         $place->iptu = $data['iptu'];
         $place->description = $data['description'];
@@ -77,7 +81,6 @@ class PlaceController extends Controller
             'bathrooms' => $data['bathrooms'],
             'suites' => $data['suites'],
             'vacancies' => $data['vacancies'],
-            'walk' => $data['walk'],
             'rent_value' => $data['rent_value'],
             'sale_value' => $data['sale_value'],
             'condominium_value' => $data['condominium_value'],
@@ -295,6 +298,9 @@ class PlaceController extends Controller
             if ($filter->number) {
                 $query->where('adresses.number', 'LIKE', "%$filter->number%");
             }    
+            if ($filter->intent) {
+                $query->where('places.intent', 'LIKE', "%$filter->intent%");
+            }
             if ($filter->condition) {
                 $query->where('places.condition', 'LIKE', "%$filter->condition%");
             }
@@ -313,6 +319,12 @@ class PlaceController extends Controller
             if ($filter->rentValueMax) {
                 $query->where('places.rent_value', '<=', $filter->rentValueMax);
             }
+            if ($filter->saleValueMin) {
+                $query->where('places.sale_value', '>=', $filter->saleValueMin);
+            }
+            if ($filter->saleValueMax) {
+                $query->where('places.sale_value', '<=', $filter->saleValueMax);
+            }
             if ($filter->rooms) {
                 $query->where('places.rooms', '=', $filter->rooms);
             }
@@ -321,9 +333,6 @@ class PlaceController extends Controller
             }
             if ($filter->vacancies) {
                 $query->where('places.vacancies', '=', $filter->vacancies);
-            }
-            if ($filter->walk) {
-                $query->where('places.walk', '=', $filter->walk);
             }
         })->where('places.active', true)->get();
 
