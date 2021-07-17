@@ -20,6 +20,8 @@ class Places extends Migration
             // $table->text('description')->nullable();
             // $table->string('image_path')->nullable();
 
+            $table->boolean('active')->default(false);
+            $table->string('intent');
             $table->string('condition');
             $table->string('type');
             $table->integer('area')->nullable();
@@ -29,7 +31,7 @@ class Places extends Migration
             $table->integer('vacancies')->nullable();
             $table->integer('walk')->nullable();
             $table->float('rent_value');
-            $table->string('condominium')->nullable();
+            $table->float('sale_value');
             $table->float('condominium_value');
             $table->float('iptu')->nullable();
             $table->text('description')->nullable();

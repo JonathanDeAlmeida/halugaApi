@@ -26,6 +26,7 @@ class PlaceController extends Controller
 
         $place = new Place();
         $place->responsible_id = $responsible->id;
+        $place->intent = $data['intent'];
         $place->condition = $data['condition'];
         $place->type = $data['type'];
         $place->area = $data['area'];
@@ -35,7 +36,7 @@ class PlaceController extends Controller
         $place->vacancies = $data['vacancies'];
         $place->walk = $data['walk'];
         $place->rent_value = $data['rent_value'];
-        $place->condominium = $data['condominium'];
+        $place->sale_value = $data['sale_value'];
         $place->condominium_value = $data['condominium_value'];
         $place->iptu = $data['iptu'];
         $place->description = $data['description'];
@@ -68,6 +69,7 @@ class PlaceController extends Controller
         $data = $request->all();
 
         Place::where('id', $data['id'])->update([
+            'intent' => $data['intent'],
             'condition' => $data['condition'],
             'type' => $data['type'],
             'area' => $data['area'],
@@ -77,7 +79,7 @@ class PlaceController extends Controller
             'vacancies' => $data['vacancies'],
             'walk' => $data['walk'],
             'rent_value' => $data['rent_value'],
-            'condominium' => $data['condominium'],
+            'sale_value' => $data['sale_value'],
             'condominium_value' => $data['condominium_value'],
             'iptu' => $data['iptu'],
             'description' => $data['description'],
