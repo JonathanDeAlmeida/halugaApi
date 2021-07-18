@@ -280,24 +280,15 @@ class PlaceController extends Controller
         ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
         ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
         ->where(function($query) use ($filter) {
-            if ($filter->street) {
-                $query->where('adresses.street', 'LIKE', "%$filter->street%");
-            }
             if ($filter->district) {
                 $query->where('adresses.district', 'LIKE', "%$filter->district%");
             }
             if ($filter->city) {
                 $query->where('adresses.city', 'LIKE', "%$filter->city%");
             }
-            if ($filter->cep) {
-                $query->where('adresses.cep', 'LIKE', "%$filter->cep%");
-            }
             if ($filter->state) {
                 $query->where('adresses.state', 'LIKE', "%$filter->state%");
-            }
-            if ($filter->number) {
-                $query->where('adresses.number', 'LIKE', "%$filter->number%");
-            }    
+            }   
             if ($filter->intent) {
                 $query->where('places.intent', 'LIKE', "%$filter->intent%");
             }
@@ -333,6 +324,9 @@ class PlaceController extends Controller
             }
             if ($filter->vacancies) {
                 $query->where('places.vacancies', '=', $filter->vacancies);
+            }
+            if ($filter->suites) {
+                $query->where('places.suites', '=', $filter->suites);
             }
         })->where('places.active', true)->get();
 

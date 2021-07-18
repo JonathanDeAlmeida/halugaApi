@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Responsible;
 use App\Models\Place;
-
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Validator;
 
@@ -106,5 +106,43 @@ class UserController extends Controller
         }
 
         return response()->json(['user_enabled' => true, 'user_id' => $has_user->id]);
+    }
+
+    public function deleteUser (Request $request)
+    {
+        $data = $request->all();
+
+        $deleted = User::where('id', $data['user_id'])->delete();
+
+        if ($deleted) {
+            return response()->json('excluído com sucesso');
+        }
+
+    }
+
+    public function recoverPassword (Request $request)
+    {
+        $data = $request->all();
+
+        $used_email = User::where('email', $data['email'])->first();
+
+        if (!$used_email) {
+            return response()->json(['not_found' => true, 'message' => 'Email não encontrado']);
+        }
+
+        // Mail::send('email.recoverypassword', ['curso' => 'Eloquent'], function ($mail) {
+        //     $mail->from('haluga.imoveis@gmail.com', 'Haluga');
+        //     $mail->to('jonathan88994004@gmail.com');
+        // });
+
+        // $email = 'jonathan88994004@gmail.com';
+
+        // $messageData = ['email' => 'jonathan88994004@gmail.com','name' => 'Jonathan'];
+
+        // Mail::send('email.recoverypassword',$messageData,function($message) use($email){
+        //     $message->from('haluga.imoveis@gmail.com', 'Haluga')->to($email)->subject('Registration with AddSpy');
+        // });
+
+        return response()->json(['not_found' => false, 'message' => 'Email enviado']);
     }
 }

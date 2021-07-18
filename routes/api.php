@@ -13,6 +13,7 @@ Route::post('user-edit', 'App\Http\Controllers\UserController@edit');
 Route::post('get-user', 'App\Http\Controllers\UserController@get');
 Route::get('get-all', 'App\Http\Controllers\UserController@getAll');
 Route::post('login', 'App\Http\Controllers\UserController@login');
+Route::post('delete-user', 'App\Http\Controllers\UserController@deleteUser');
 
 Route::post('upload-file', 'App\Http\Controllers\PlaceController@postUploadFile');
 Route::post('remove-file', 'App\Http\Controllers\PlaceController@removeFile');
@@ -21,6 +22,7 @@ Route::post('get-place-images', 'App\Http\Controllers\PlaceController@getPlaceIm
 
 Route::post('delete-place', 'App\Http\Controllers\PlaceController@deletePlace');
 Route::post('get-places', 'App\Http\Controllers\PlaceController@getPlaces');
+Route::post('recover-password', 'App\Http\Controllers\UserController@recoverPassword');
 
 Route::post('get-place', 'App\Http\Controllers\PlaceController@getPlace');
 Route::post('get-filter-place', 'App\Http\Controllers\PlaceController@getFilterPlace');
