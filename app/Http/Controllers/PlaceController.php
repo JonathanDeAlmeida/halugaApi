@@ -132,7 +132,7 @@ class PlaceController extends Controller
         ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
         ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
         ->where('users.id', $data['user_id'])
-        ->get();
+        ->paginate(1);
 
         foreach ($places as $place) {
             $place->images = PlaceImage::where('place_id', $place->place_id)->get();
@@ -188,36 +188,26 @@ class PlaceController extends Controller
 
      public function postUploadFile(Request $request)
     {
-        
-        $req = $request->all();
-        $resp = $this->placeImageUpload($req['file'], $req['place_id']);
-
-        return response()->json($resp);
-    }
-
-    public function placeImageUpload ($file, $place_id)
-    {
+        $data = $request->all();
+        $file = $data['file'];
 
         $filename = $file->getClientOriginalName();
         $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
         $place_image = new PlaceImage();
-        $place_image->place_id = $place_id;
+        $place_image->place_id = $data['place_id'];
         $place_image->save();
-        
-        $nameDate = Carbon::now()->format('YmdHms') . 'i' . $place_image->id . 'p' . $place_image->place_id;
-        $name = $nameDate . '.' . $extension;
 
-        $file->storeAs('public/placeImages', $name);
-        $path = '/storage/placeImages/' . $name;
+        $upload = $request->file->store('placeImages');
+        $path = '/storage/' . $upload;
 
-        $place_image->name = $name;
+        $place_image->name = $upload;
         $place_image->path = $path;
         $place_image->save();
 
-        $this->countImages($place_id);
+        $this->countImages($data['place_id']);
 
-        return $place_image;
+        return response()->json($place_image);
     }
 
     public function removeFile(Request $request)
@@ -328,12 +318,14 @@ class PlaceController extends Controller
             if ($filter->suites) {
                 $query->where('places.suites', '=', $filter->suites);
             }
-        })->where('places.active', true)->get();
+        })->where('places.active', true)->paginate(1);
 
-        foreach ($places as $place) {
+        $places_all = json_decode(json_encode($places));
+        
+        foreach ($places_all->data as $place) {
             $place->images = PlaceImage::where('place_id', $place->place_id)->get();
         }
 
-        return response()->json($places);
+        return response()->json($places_all);
     }
 }

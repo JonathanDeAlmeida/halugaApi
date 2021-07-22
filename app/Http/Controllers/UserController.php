@@ -6,6 +6,8 @@ use App\Models\Responsible;
 use App\Models\Place;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use Validator;
 
 use Illuminate\Http\Request;
@@ -32,7 +34,9 @@ class UserController extends Controller
         $user->email = $data['email'];
         $user->save();
 
-        return response()->json(['user_enabled' => true, 'user' => $user]);
+        $authUser = $user->createToken($request->email)->plainTextToken;
+
+        return response()->json(['user_enabled' => true, 'authUser' => $authUser, 'userId' => $user->id]);
     }
 
     public function get (Request $request)
@@ -51,12 +55,6 @@ class UserController extends Controller
             }
         }
 
-        return response()->json($user);
-    }
-
-    public function getAll (Request $request)
-    {
-        $user = User::get();
         return response()->json($user);
     }
 
@@ -95,17 +93,18 @@ class UserController extends Controller
             return response()->json(['user_enabled' => false, 'message' => 'Todos Os Campos Devem Ser Preenchidos']);
         }
 
-        $has_user = User::where('email', $data['email'])->first();
-
-        if (!$has_user) {
-            return response()->json(['user_enabled' => false, 'message' => 'Não Há Usuário Cadastrado']);
+        $user = User::where('email', $request->email)->first();
+        
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            // throw ValidationException::withMessages([
+            //     'email' => ['The provided credentials are incorrect.'],
+            // ]);
+            return response()->json(['user_enabled' => false, 'message' => 'Não Autenticado']);
         }
+    
+        $authUser = $user->createToken($request->email)->plainTextToken;
 
-        if (crypt($data['password'], $has_user->password) != $has_user->password) {
-            return response()->json(['user_enabled' => false, 'message' => 'Senha Incorreta']);
-        }
-
-        return response()->json(['user_enabled' => true, 'user_id' => $has_user->id]);
+        return response()->json(['user_enabled' => true, 'authUser' => $authUser, 'userId' => $user->id]);
     }
 
     public function deleteUser (Request $request)
