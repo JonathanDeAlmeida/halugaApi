@@ -102,7 +102,9 @@ class PlaceController extends Controller
             'phone' => $data['phone'],
         ]);
 
-        return response()->json('editado com sucesso');
+        $place = Place::where('id', $data['id'])->first();
+
+        return response()->json($place);
     }
 
     public function getPlaceTimes (Request $request)
