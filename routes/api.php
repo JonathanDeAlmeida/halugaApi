@@ -13,6 +13,8 @@ Route::post('user-create', 'App\Http\Controllers\UserController@create');
 Route::post('recover-password', 'App\Http\Controllers\UserController@recoverPassword');
 Route::post('get-place', 'App\Http\Controllers\PlaceController@getPlace');
 Route::get('get-filter-place', 'App\Http\Controllers\PlaceController@getFilterPlace');
+Route::post('help-create', 'App\Http\Controllers\HelpController@create');
+
 
 Route::middleware('auth:sanctum')->post('/get-user', 'App\Http\Controllers\UserController@get');
 Route::middleware('auth:sanctum')->get('/get-places', 'App\Http\Controllers\PlaceController@getPlaces');

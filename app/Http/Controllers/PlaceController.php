@@ -127,14 +127,15 @@ class PlaceController extends Controller
     public function getPlaces (Request $request)
     {
         $data = $request->all();    
-
+    
         $places = Place::select('users.name as responsible_name', 'places.*', 'adresses.*', 'phones.*', 'places.id as place_id')
         ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
         ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
         ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
         ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
         ->where('users.id', $data['user_id'])
-        ->paginate(1);
+        ->orderBy('places.id', 'DESC')
+        ->paginate(2);
 
         foreach ($places as $place) {
             $place->images = PlaceImage::where('place_id', $place->place_id)->get();
@@ -320,7 +321,7 @@ class PlaceController extends Controller
             if ($filter->suites) {
                 $query->where('places.suites', '=', $filter->suites);
             }
-        })->where('places.active', true)->paginate(1);
+        })->where('places.active', true)->paginate(2);
 
         $places_all = json_decode(json_encode($places));
         
