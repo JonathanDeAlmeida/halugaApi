@@ -321,7 +321,7 @@ class PlaceController extends Controller
             if ($filter->suites) {
                 $query->where('places.suites', '=', $filter->suites);
             }
-        })->where('places.active', true)->paginate(2);
+        })->orderBy('places.id', 'desc')->where('places.active', true)->paginate(2);
 
         $places_all = json_decode(json_encode($places));
         
