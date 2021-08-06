@@ -29,10 +29,12 @@ class Places extends Migration
             $table->integer('bathrooms')->nullable();
             $table->integer('suites')->nullable();
             $table->integer('vacancies')->nullable();
-            $table->decimal('rent_value', 12, 2)->nullable();
-            $table->decimal('sale_value', 12, 2)->nullable();
-            $table->decimal('condominium_value', 12, 2)->nullable();
-            $table->decimal('iptu', 12, 2)->nullable();
+            
+            $table->decimal('rent_value', 12, 2)->default(0.00);
+            $table->decimal('sale_value', 12, 2)->default(0.00);
+            $table->decimal('condominium_value', 12, 2)->default(0.00);
+            $table->decimal('iptu', 12, 2)->default(0.00);
+
             $table->text('description')->nullable();
 
             $table->timestamps();

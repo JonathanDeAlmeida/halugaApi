@@ -230,7 +230,9 @@ class PlaceController extends Controller
 
                 $this->countImages($image->place_id);
 
-                return response()->json('excluído com sucesso');
+                $place = Place::where('id', $image->place_id)->first();
+
+                return response()->json($place);
             }
         }   
         return response()->json('imagem não encontrada');
