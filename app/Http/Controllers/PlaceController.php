@@ -128,12 +128,39 @@ class PlaceController extends Controller
     {
         $data = $request->all();    
     
-        $places = Place::select('users.name as responsible_name', 'places.*', 'adresses.*', 'phones.*', 'places.id as place_id')
+        $places = Place::select(            
+            'places.id as place_id',
+            'places.responsible_id',
+            'places.active',
+            'places.intent',
+            'places.condition',
+            'places.type',
+            'places.area',
+            'places.rooms',
+            'places.bathrooms',
+            'places.suites',
+            'places.vacancies',
+            'places.rent_value',
+            'places.sale_value',
+            'places.iptu',
+            'places.description',
+            'users.name as responsible_name',
+            'users.email',
+            'adresses.street',
+            'adresses.number',
+            'adresses.district',
+            'adresses.city',
+            'adresses.state',
+            'adresses.complement',
+            'adresses.cep',
+            'phones.phone'
+        )
         ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
         ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
         ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
         ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
         ->where('users.id', $data['user_id'])
+        ->groupBy('places.id')
         ->orderBy('places.id', 'DESC')
         ->paginate(2);
 
@@ -265,25 +292,51 @@ class PlaceController extends Controller
         $filter = json_decode($data);
         
         $places = Place::select(
+            'places.id as place_id',
+            'places.responsible_id',
+            'places.active',
+            'places.intent',
+            'places.condition',
+            'places.type',
+            'places.area',
+            'places.rooms',
+            'places.bathrooms',
+            'places.suites',
+            'places.vacancies',
+            'places.rent_value',
+            'places.sale_value',
+            'places.iptu',
+            'places.description',
             'users.name as responsible_name',
-            'places.*',
-            'adresses.*',
-            'phones.*'
+            'users.email',
+            'adresses.street',
+            'adresses.number',
+            'adresses.district',
+            'adresses.city',
+            'adresses.state',
+            'adresses.complement',
+            'adresses.cep',
+            'phones.phone'
         )
         ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
         ->leftJoin('phones', 'phones.place_id', '=', 'places.id')
         ->leftJoin('responsibles', 'responsibles.id', '=', 'places.responsible_id')
         ->leftJoin('users', 'users.id', '=', 'responsibles.user_id')
         ->where(function($query) use ($filter) {
-            if ($filter->district) {
-                $query->where('adresses.district', 'LIKE', "%$filter->district%");
+            // if ($filter->district) {
+            //     $query->where('adresses.district', 'LIKE', "%$filter->district%");
+            // }
+            // if ($filter->city) {
+            //     $query->where('adresses.city', 'LIKE', "%$filter->city%");
+            // }
+            // if ($filter->state) {
+            //     $query->where('adresses.state', 'LIKE', "%$filter->state%");
+            // }   
+            if ($filter->address) {
+                $query->where('adresses.street', 'LIKE', "%$filter->address%")
+                ->orWhere('adresses.district', 'LIKE', "%$filter->address%")
+                ->orWhere('adresses.city', 'LIKE', "%$filter->address%");
             }
-            if ($filter->city) {
-                $query->where('adresses.city', 'LIKE', "%$filter->city%");
-            }
-            if ($filter->state) {
-                $query->where('adresses.state', 'LIKE', "%$filter->state%");
-            }   
             if ($filter->intent) {
                 $query->where('places.intent', 'LIKE', "%$filter->intent%");
             }
@@ -299,31 +352,33 @@ class PlaceController extends Controller
             if ($filter->areaMax) {
                 $query->where('places.area', '<=', $filter->areaMax);
             }
-            if ($filter->rentValueMin) {
-                $query->where('places.rent_value', '>=', $filter->rentValueMin);
+            if ($filter->valueMin) {
+                if ($filter->intent == 'rent') {
+                    $query->where('places.rent_value', '>=', $filter->valueMin);
+                } else {
+                    $query->where('places.sale_value', '>=', $filter->valueMin);
+                }
             }
-            if ($filter->rentValueMax) {
-                $query->where('places.rent_value', '<=', $filter->rentValueMax);
-            }
-            if ($filter->saleValueMin) {
-                $query->where('places.sale_value', '>=', $filter->saleValueMin);
-            }
-            if ($filter->saleValueMax) {
-                $query->where('places.sale_value', '<=', $filter->saleValueMax);
+            if ($filter->valueMax) {
+                if ($filter->intent == 'rent') {
+                    $query->where('places.rent_value', '<=', $filter->valueMax);
+                } else {
+                    $query->where('places.sale_value', '<=', $filter->valueMax);
+                }
             }
             if ($filter->rooms) {
-                $query->where('places.rooms', '=', $filter->rooms);
+                $query->where('places.rooms', '>=', $filter->rooms);
             }
             if ($filter->bathrooms) {
-                $query->where('places.bathrooms', '=', $filter->bathrooms);
+                $query->where('places.bathrooms', '>=', $filter->bathrooms);
             }
             if ($filter->vacancies) {
-                $query->where('places.vacancies', '=', $filter->vacancies);
+                $query->where('places.vacancies', '>=', $filter->vacancies);
             }
             if ($filter->suites) {
-                $query->where('places.suites', '=', $filter->suites);
+                $query->where('places.suites', '>=', $filter->suites);
             }
-        })->orderBy('places.id', 'desc')->where('places.active', true)->paginate(2);
+        })->groupBy('places.id')->orderBy('places.id', 'desc')->where('places.active', true)->paginate(2);
 
         $places_all = json_decode(json_encode($places));
         
