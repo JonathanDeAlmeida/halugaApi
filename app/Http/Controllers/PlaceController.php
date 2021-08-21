@@ -331,18 +331,14 @@ class PlaceController extends Controller
             // }
             // if ($filter->state) {
             //     $query->where('adresses.state', 'LIKE', "%$filter->state%");
-            // }   
-            if ($filter->address) {
-                $query->where('adresses.street', 'LIKE', "%$filter->address%")
-                ->orWhere('adresses.district', 'LIKE', "%$filter->address%")
-                ->orWhere('adresses.city', 'LIKE', "%$filter->address%");
-            }
+            // }
             if ($filter->intent) {
-                $query->where('places.intent', 'LIKE', "%$filter->intent%");
-            }
-            if ($filter->condition) {
-                $query->where('places.condition', 'LIKE', "%$filter->condition%");
-            }
+                $intent = explode('-', $filter->intent);
+                $query->where('places.intent', 'LIKE', "%$intent[0]%")->where('places.condition', 'LIKE', "%$intent[1]%");
+            }   
+            // if ($filter->condition) {
+            //     $query->where('places.condition', 'LIKE', "%$filter->condition%");
+            // }
             if ($filter->type) {
                 $query->where('places.type', 'LIKE', "%$filter->type%");
             }
@@ -352,14 +348,14 @@ class PlaceController extends Controller
             if ($filter->areaMax) {
                 $query->where('places.area', '<=', $filter->areaMax);
             }
-            if ($filter->valueMin) {
+            if ($filter->valueMin && $filter->valueMin > 0) {
                 if ($filter->intent == 'rent') {
                     $query->where('places.rent_value', '>=', $filter->valueMin);
                 } else {
                     $query->where('places.sale_value', '>=', $filter->valueMin);
                 }
             }
-            if ($filter->valueMax) {
+            if ($filter->valueMax && $filter->valueMax > 0) {
                 if ($filter->intent == 'rent') {
                     $query->where('places.rent_value', '<=', $filter->valueMax);
                 } else {
@@ -377,6 +373,11 @@ class PlaceController extends Controller
             }
             if ($filter->suites) {
                 $query->where('places.suites', '>=', $filter->suites);
+            }
+            if ($filter->address) {
+                $query->where('adresses.street', 'LIKE', "%$filter->address%")
+                ->orWhere('adresses.district', 'LIKE', "%$filter->address%")
+                ->orWhere('adresses.city', 'LIKE', "%$filter->address%");
             }
         })->groupBy('places.id')->orderBy('places.id', 'desc')->where('places.active', true)->paginate(2);
 
