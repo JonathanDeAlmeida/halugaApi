@@ -142,6 +142,7 @@ class PlaceController extends Controller
             'places.vacancies',
             'places.rent_value',
             'places.sale_value',
+            'places.condominium_value',
             'places.iptu',
             'places.description',
             'users.name as responsible_name',
@@ -190,17 +191,6 @@ class PlaceController extends Controller
     public function getPlace (Request $request)
     {
         $data = $request->all();
-        // $place_id = isset($data['place_id']) ? $data['place_id'] : null;
-
-        // if (isset($data['user_id'])) {
-        //     $place_user = User::select('places.id')
-        //     ->leftJoin('responsibles', 'responsibles.user_id', '=', 'users.id')
-        //     ->leftJoin('places', 'places.responsible_id', '=', 'responsibles.id')
-        //     ->where('users.id', $data['user_id'])
-        //     ->first();
-
-        //     $place_id = $place_user->id;
-        // }
 
         $place = Place::select('users.name as responsible_name', 'places.*', 'adresses.*', 'phones.*')
         ->leftJoin('adresses', 'adresses.place_id', '=', 'places.id')
@@ -305,6 +295,7 @@ class PlaceController extends Controller
             'places.vacancies',
             'places.rent_value',
             'places.sale_value',
+            'places.condominium_value',
             'places.iptu',
             'places.description',
             'users.name as responsible_name',
@@ -333,12 +324,11 @@ class PlaceController extends Controller
             //     $query->where('adresses.state', 'LIKE', "%$filter->state%");
             // }
             if ($filter->intent) {
-                $intent = explode('-', $filter->intent);
-                $query->where('places.intent', 'LIKE', "%$intent[0]%")->where('places.condition', 'LIKE', "%$intent[1]%");
+                $query->where('places.intent', 'LIKE', "%$filter->intent%");
             }   
-            // if ($filter->condition) {
-            //     $query->where('places.condition', 'LIKE', "%$filter->condition%");
-            // }
+            if ($filter->condition) {
+                $query->where('places.condition', 'LIKE', "%$filter->condition%");
+            }
             if ($filter->type) {
                 $query->where('places.type', 'LIKE', "%$filter->type%");
             }
@@ -374,11 +364,17 @@ class PlaceController extends Controller
             if ($filter->suites) {
                 $query->where('places.suites', '>=', $filter->suites);
             }
-            if ($filter->address) {
-                $query->where('adresses.street', 'LIKE', "%$filter->address%")
-                ->orWhere('adresses.district', 'LIKE', "%$filter->address%")
-                ->orWhere('adresses.city', 'LIKE', "%$filter->address%");
+
+            if ($filter->city) {
+                $query->where('adresses.city', 'LIKE', "%$filter->city%");
             }
+            if ($filter->district) {
+                $query->where('adresses.district', 'LIKE', "%$filter->district%");
+            }
+            if ($filter->street) {
+                $query->where('adresses.street', 'LIKE', "%$filter->street%");
+            }
+
         })->groupBy('places.id')->orderBy('places.id', 'desc')->where('places.active', true)->paginate(2);
 
         $places_all = json_decode(json_encode($places));
