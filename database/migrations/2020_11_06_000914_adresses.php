@@ -16,13 +16,13 @@ class Adresses extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->string('street');
+            $table->string('street')->nullable();
             $table->string('number')->nullable();
             $table->string('district');
             $table->string('city');
             $table->string('state');
             $table->string('complement')->nullable();
-            $table->string('cep');
+            $table->string('cep')->nullable();
 
             $table->timestamps();
         });

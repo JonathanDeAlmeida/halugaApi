@@ -239,7 +239,7 @@ class PlaceController extends Controller
 
             $image = PlaceImage::where('id', $data['file_id'])->first();
         
-            Storage::delete('public/placeImages/' . $image->name); 
+            Storage::delete($image->name);
     
             $deleted = PlaceImage::where('id', $data['file_id'])->delete();
     
