@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Responsible;
 use App\Models\Place;
+use App\Models\PlaceImage;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
 use Validator;
 
 use Illuminate\Http\Request;
@@ -110,6 +112,20 @@ class UserController extends Controller
     public function deleteUser (Request $request)
     {
         $data = $request->all();
+
+        $responsibles = Responsible::where('user_id', $data['user_id'])->get();
+
+        foreach ($responsibles as $responsible) {
+
+            $place = Place::where('responsible_id', $responsible->id)->first();
+
+            $place_images = PlaceImage::where('place_id', $place->id)->get();
+
+            foreach ($place_images as $place_image) {
+
+                Storage::delete($place_image->name);
+            }
+        }
 
         $deleted = User::where('id', $data['user_id'])->delete();
 

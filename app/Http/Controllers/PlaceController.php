@@ -179,6 +179,12 @@ class PlaceController extends Controller
 
         $place = Place::where('id', $data['place_id'])->first();
 
+        $place_images = PlaceImage::where('place_id', $data['place_id'])->get();
+
+        foreach ($place_images as $place_image) {
+            Storage::delete($place_image->name);
+        }
+
         $deleted = Place::where('id', $data['place_id'])->delete();
 
         if ($deleted) {
