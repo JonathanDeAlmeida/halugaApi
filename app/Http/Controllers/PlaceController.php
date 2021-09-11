@@ -163,7 +163,7 @@ class PlaceController extends Controller
         ->where('users.id', $data['user_id'])
         ->groupBy('places.id')
         ->orderBy('places.id', 'DESC')
-        ->paginate(2);
+        ->paginate(10);
 
         foreach ($places as $place) {
             $place->images = PlaceImage::where('place_id', $place->place_id)->get();
@@ -381,7 +381,7 @@ class PlaceController extends Controller
                 $query->where('adresses.street', 'LIKE', "%$filter->street%");
             }
 
-        })->groupBy('places.id')->orderBy('places.id', 'desc')->where('places.active', true)->paginate(2);
+        })->groupBy('places.id')->orderBy('places.id', 'desc')->where('places.active', true)->paginate(10);
 
         $places_all = json_decode(json_encode($places));
         
