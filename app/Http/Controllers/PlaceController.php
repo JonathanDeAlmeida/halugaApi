@@ -43,6 +43,7 @@ class PlaceController extends Controller
 
         $place->condominium_value = $data['condominium_value'];
         $place->iptu = $data['iptu'];
+        $place->broker = $data['broker'];
         $place->description = $data['description'];
         $place->save();
 
@@ -85,6 +86,7 @@ class PlaceController extends Controller
             'sale_value' => $data['sale_value'],
             'condominium_value' => $data['condominium_value'],
             'iptu' => $data['iptu'],
+            'broker' => $data['broker'],
             'description' => $data['description'],
         ]);
 
@@ -144,6 +146,7 @@ class PlaceController extends Controller
             'places.sale_value',
             'places.condominium_value',
             'places.iptu',
+            'places.broker',
             'places.description',
             'users.name as responsible_name',
             'users.email',
@@ -303,6 +306,7 @@ class PlaceController extends Controller
             'places.sale_value',
             'places.condominium_value',
             'places.iptu',
+            'places.broker',
             'places.description',
             'users.name as responsible_name',
             'users.email',

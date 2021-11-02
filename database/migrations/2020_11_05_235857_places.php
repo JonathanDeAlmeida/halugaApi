@@ -35,6 +35,7 @@ class Places extends Migration
             $table->decimal('condominium_value', 12, 2)->default(0.00);
             $table->decimal('iptu', 12, 2)->default(0.00);
 
+            $table->string('broker')->nullable();
             $table->text('description')->nullable();
 
             $table->timestamps();
